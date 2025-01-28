@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "fe-be-chart.fullname" . }}-fe-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "fe-be-chart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.fe.service.type }}
+  ports:
+    - port: {{ .Values.fe.service.port }}
+      targetPort: {{ .Values.fe.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "fe-be-chart.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "fe-be-chart.fullname" . }}-be-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "fe-be-chart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.be.service.type }}
+  ports:
+    - port: {{ .Values.be.service.port }}
+      targetPort: {{ .Values.be.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "fe-be-chart.selectorLabels" . | nindent 4 }}

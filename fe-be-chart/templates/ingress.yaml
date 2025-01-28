@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "fe-be-chart.fullname" . }}-ingress
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "fe-be-chart.labels" . | nindent 4 }}
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.externalDnsHostname }}
+    {{- toYaml .Values.fe.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.fe.ingress.ingressClassName }}
+  tls:
+    - hosts:
+        {{- range .Values.fe.ingress.tls.hosts }}
+          - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .Values.fe.ingress.secretName }}
+  rules:
+    - host: {{ .Values.externalDnsHostname }}
+      http:
+        paths:
+          - path: {{ .Values.fe.ingress.path }}
+            pathType: {{ .Values.fe.ingress.pathType }}
+            backend:
+              service:
+                name: {{ include "fe-be-chart.fullname" . }}-fe-service
+                port:
+                  number: {{ .Values.fe.service.port }}
+
+          - path: {{ .Values.be.ingress.path }}
+            pathType: {{ .Values.fe.ingress.pathType }}
+            backend:
+              service:
+                name: {{ include "fe-be-chart.fullname" . }}-be-service
+                port:
+                  number: {{ .Values.be.service.port }}

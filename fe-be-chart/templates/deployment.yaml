@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fe-be-chart.fullname" . }}-fe
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "fe-be-chart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.fe.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "fe-be-chart.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "fe-be-chart.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- include "fe-be-chart.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.fe.image.repository }}:{{ .Values.fe.image.tag }}"
+          imagePullPolicy: "{{ .Values.fe.image.pullPolicy }}"
+          ports:
+            - containerPort: {{ .Values.fe.service.targetPort }}
+          env:
+            - name: REACT_APP_BACKEND_URL
+              value: "{{ .Values.fe.env.REACT_APP_BACKEND_URL }}"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fe-be-chart.fullname" . }}-be
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "fe-be-chart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.be.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "fe-be-chart.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "fe-be-chart.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- include "fe-be-chart.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.be.image.repository }}:{{ .Values.be.image.tag }}"
+          imagePullPolicy: "{{ .Values.be.image.pullPolicy }}"
+          ports:
+            - containerPort: {{ .Values.be.service.targetPort }}
